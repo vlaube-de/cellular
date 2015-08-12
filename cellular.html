@@ -10,87 +10,102 @@
         ctx.fillStyle = 'rgb(0, 0, 0)';
         ctx.fillRect(canvas.width/2,1,1,1);
         
-        var r1=document.forms.rules.rule1.checked;
-        var r2=document.forms.rules.rule2.checked;
-        var r3=document.forms.rules.rule3.checked;
-        var r4=document.forms.rules.rule4.checked;
-        var r5=document.forms.rules.rule5.checked;
-        var r6=document.forms.rules.rule6.checked;
-        var r7=document.forms.rules.rule7.checked;
-        var r8=document.forms.rules.rule8.checked;
+        // var r1=document.forms.rules.rule1.checked;
+        // var r2=document.forms.rules.rule2.checked;
+        // var r3=document.forms.rules.rule3.checked;
+        // var r4=document.forms.rules.rule4.checked;
+        // var r5=document.forms.rules.rule5.checked;
+        // var r6=document.forms.rules.rule6.checked;
+        // var r7=document.forms.rules.rule7.checked;
+        // var r8=document.forms.rules.rule8.checked;
         
+        var r = [
+          document.forms.rules.rule1.checked,
+          document.forms.rules.rule2.checked,
+          document.forms.rules.rule3.checked,
+          document.forms.rules.rule4.checked,
+          document.forms.rules.rule5.checked,
+          document.forms.rules.rule6.checked,
+          document.forms.rules.rule7.checked,
+          document.forms.rules.rule8.checked
+        ];
+
         for(var y=1; y<canvas.height-1; y++) {
           var myImageData = ctx.getImageData(0, y, canvas.width, 1);
           var myImageData2 = ctx.getImageData(0, y, canvas.width, 1);
           
-          for(var x=1; x<canvas.width-1; x++) {
-/*
-            var a = myImageData.data[(x-1)*4] == 0;
-            var b = myImageData.data[x*4]     == 0;
-            var c = myImageData.data[(x+1)*4] == 0;
-*/
-var a = myImageData.data[(x-1)*4] != 255;
-a = a | myImageData.data[((x-1)*4)+1] != 255;
-a = a | myImageData.data[((x-1)*4)+2] != 255;
-var b = myImageData.data[x*4]     != 255;
-b = b | myImageData.data[(x*4)+1] != 255;
-b = b | myImageData.data[(x*4)+2] != 255;
-var c = myImageData.data[(x+1)*4] != 255;
-c = c | myImageData.data[((x+1)*4)+1] != 255;
-c = c | myImageData.data[((x+1)*4)+2] != 255;
+          for(var x = 1; x < canvas.width - 1; x++) {
+            var prevIndex = (x - 1) * 4
+            var currIndex = (x + 0) * 4;
+            var nextIndex = (x + 1) * 4;
+
+var a = myImageData.data[prevIndex + 0] != 255;
+a = a | myImageData.data[prevIndex + 1] != 255;
+a = a | myImageData.data[prevIndex + 2] != 255;
+
+var b = myImageData.data[currIndex + 0] != 255;
+b = b | myImageData.data[currIndex + 1] != 255;
+b = b | myImageData.data[currIndex + 2] != 255;
+
+var c = myImageData.data[nextIndex + 0] != 255;
+c = c | myImageData.data[nextIndex + 1] != 255;
+c = c | myImageData.data[nextIndex + 2] != 255;
             
             if(x<2) a=0;
             
-            //var d = ((a&&!b&&!c) || (!a&&b&&c) || (!a&&b&&!c) || (!a&&!b&&c)) ? 0 : 255;
-            var d='white';
-            if(a && b && c && r1)
-              d='fuchsia';
-            if(a && b && !c && r2)
-              d='red';
-            if(a && !b && c && r3)
-              d='orange';
-            if(a && !b && !c && r4)
-              d='yellow';
-            if(!a && b && c && r5)
-              d='green';
-            if(!a && b && !c && r6)
-              d='dodgerblue';
-            if(!a && !b && c && r7)
-              d='navy';
-            if(!a && !b && !c && r8)
-              d='purple';
-/*
-            var d=255;
-            if(a && b && c && r1)
-              d=0;
-            if(a && b && !c && r2)
-              d=0;
-            if(a && !b && c && r3)
-              d=0;
-            if(a && !b && !c && r4)
-              d=0;
-            if(!a && b && c && r5)
-              d=0;
-            if(!a && b && !c && r6)
-              d=0;
-            if(!a && !b && c && r7)
-              d=0;
-            if(!a && !b && !c && r8)
-              d=0;
-            var index = x*4;
-            myImageData2.data[index]   = d;
-            myImageData2.data[index+1] = d;
-            myImageData2.data[index+2] = d;
-*/
-            var index = x*4;
-            myImageData2.data[index]   = (d=='white')?255:0;
-            myImageData2.data[index+1] = (d=='white')?255:0;
-            myImageData2.data[index+2] = (d=='white')?255:0;
+            var colors = [
+              'fuchsia',    // 0
+              'red',        // 1
+              'orange',     // 2
+              'yellow',     // 3
+              'green',      // 4
+              'dodgerblue', // 5
+              'navy',       // 6
+              'purple'      // 7
+            ];
 
-ctx.fillStyle = d;
+
+            var abc = 0;
+            if(!c) abc += 1;
+            if(!b) abc += 2;
+            if(!a) abc += 4;
+
+            var color = 'white';
+            for(var i = 0; i < 8; i++) {
+              if(abc == i && r[i]) {
+                color = colors[i];
+              }
+            }
+
+            // if(abc == 0 && r[0])
+            //   color = colors[0];
+            // if(abc == 1 && r[1])
+            //   color = colors[1];
+            // if(abc == 2 && r[2])
+            //   color = colors[2];
+            // if(abc == 3 && r[3])
+            //   color = colors[3];
+            // if(abc == 4 && r[4])
+            //   color = colors[4];
+            // if(abc == 5 && r[5])
+            //   color = colors[5];
+            // if(abc == 6 && r[6])
+            //   color = colors[6];
+            // if(abc == 7 && r[7])
+            //   color = colors[7];
+
+            // myImageData2.data[currIndex + 0] = (color == 'white') ? 255 : 0;
+            // myImageData2.data[currIndex + 1] = (color == 'white') ? 255 : 0;
+            // myImageData2.data[currIndex + 2] = (color == 'white') ? 255 : 0;
+
+            // myImageData2.data[currIndex + 0] = color;
+            // myImageData2.data[currIndex + 1] = color;
+            // myImageData2.data[currIndex + 2] = color;
+
+ctx.fillStyle = color;
 ctx.fillRect(x,y+1,1,1);
           }
-//          ctx.putImageData(myImageData2, 0, y+1);
+         // ctx.putImageData(myImageData2, 0, y+1);
         }
     
       }
@@ -165,6 +180,6 @@ ctx.fillRect(x,y+1,1,1);
      </table>
      <input type="submit" value="Redraw"/>
    </form>
-   <canvas id="canvas" width="1000" height="500"></canvas>
+   <canvas id="canvas" width="500" height="200"></canvas>
  </body>
 </html>
