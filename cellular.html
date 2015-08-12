@@ -1,151 +1,210 @@
-<html>
- <head>
-  <script type="application/javascript">
-    function draw() {
-      var canvas = document.getElementById("canvas");
-      if (canvas.getContext) {
-        var ctx = canvas.getContext("2d");
-        ctx.fillStyle = 'rgb(255, 255, 255)';
-        ctx.fillRect(1,1,canvas.width,canvas.height);
-        ctx.fillStyle = 'rgb(0, 0, 0)';
-        ctx.fillRect(canvas.width/2,1,1,1);
-        
-        var r = [
-          document.forms.rules.rule1.checked,
-          document.forms.rules.rule2.checked,
-          document.forms.rules.rule3.checked,
-          document.forms.rules.rule4.checked,
-          document.forms.rules.rule5.checked,
-          document.forms.rules.rule6.checked,
-          document.forms.rules.rule7.checked,
-          document.forms.rules.rule8.checked
-        ];
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Cellular Automatons</title>
+    <style type="text/css">
 
-        var colors = [
-          'fuchsia',    // 0
-          'red',        // 1
-          'orange',     // 2
-          'yellow',     // 3
-          'green',      // 4
-          'dodgerblue', // 5
-          'navy',       // 6
-          'purple'      // 7
-        ];
 
-        for(var y=1; y<canvas.height-1; y++) {
-          var myImageData = ctx.getImageData(0, y, canvas.width, 1);
-          
-          for(var x = 1; x < canvas.width - 1; x++) {
+* {
+  box-sizing: border-box;
+}
+table {
+  display: inline;
+  border-collapse: collapse;
+}
+div.control {
+  display: inline-block;
+  width: 30px;
+  text-align: center
+}
+div.border {
+  display: inline-block;
+  float: left;
+}
+div.border, td.border {
+  width: 10px;
+  height: 10px;
+  border: 1px solid black;
+}
 
-            if(x > 1) {
-              var prevIndex = (x - 1) * 4
-              var r1 = myImageData.data[prevIndex + 0];
-              var g1 = myImageData.data[prevIndex + 1];
-              var b1 = myImageData.data[prevIndex + 2];
-              var prevPixel = r1 << 16 | g1 << 8 | b1 << 0
-              var a = (prevPixel == 0xffffff);
-            } else {
-              var a = true;
-            }
+div.border.black, td.border.black {
+  background: black;
+}
 
-            var currIndex = (x + 0) * 4;
-            var r2 = myImageData.data[currIndex + 0];
-            var g2 = myImageData.data[currIndex + 1];
-            var b2 = myImageData.data[currIndex + 2];
-            var currPixel = r2 << 16 | g2 << 8 | b2 << 0
-            var b = (currPixel == 0xffffff);
+div.border.white, td.border.white {
+  background: white;
+}
 
-            var nextIndex = (x + 1) * 4;
-            var r3 = myImageData.data[nextIndex + 0];
-            var g3 = myImageData.data[nextIndex + 1];
-            var b3 = myImageData.data[nextIndex + 2];
-            var nextPixel = r3 << 16 | g3 << 8 | b3 << 0
-            var c = (nextPixel == 0xffffff);
-            
-            var abc = a << 2 | b << 1 | c << 0;
 
-            var color = 'white';
-            if(r[abc]) {
-              color = colors[abc];
-            }
+    </style>
+    <script type="application/javascript">
 
-            ctx.fillStyle = color;
-            ctx.fillRect(x,y+1,1,1);
-          }
-        }
+
+function draw() {
+  // rule 30 https://en.wikipedia.org/wiki/Rule_30
+  // document.forms.rules.rule4.checked = 'checked';
+  // document.forms.rules.rule5.checked = 'checked';
+  // document.forms.rules.rule6.checked = 'checked';
+  // document.forms.rules.rule7.checked = 'checked';
+
+  // rule 90 https://en.wikipedia.org/wiki/Rule_90
+  // document.forms.rules.rule2.checked = 'checked';
+  // document.forms.rules.rule4.checked = 'checked';
+  // document.forms.rules.rule5.checked = 'checked';
+  // document.forms.rules.rule7.checked = 'checked';
+
+  // rule 110 https://en.wikipedia.org/wiki/Rule_110
+  document.forms.rules.rule2.checked = 'checked';
+  document.forms.rules.rule3.checked = 'checked';
+  document.forms.rules.rule5.checked = 'checked';
+  document.forms.rules.rule6.checked = 'checked';
+  document.forms.rules.rule7.checked = 'checked';
+
+  var canvas = document.getElementById("canvas");
+  if (canvas.getContext) {
+    var ctx = canvas.getContext("2d");
+    ctx.fillStyle = 'rgb(255, 255, 255)';
+    ctx.fillRect(1,1,canvas.width,canvas.height);
+    ctx.fillStyle = 'rgb(0, 0, 0)';
+    ctx.fillRect(canvas.width/2,1,1,1);
     
+    var r = [
+      document.forms.rules.rule1.checked,
+      document.forms.rules.rule2.checked,
+      document.forms.rules.rule3.checked,
+      document.forms.rules.rule4.checked,
+      document.forms.rules.rule5.checked,
+      document.forms.rules.rule6.checked,
+      document.forms.rules.rule7.checked,
+      document.forms.rules.rule8.checked
+    ];
+
+    var colors = [
+      'fuchsia',    // 0
+      'red',        // 1
+      'orange',     // 2
+      'yellow',     // 3
+      'green',      // 4
+      'dodgerblue', // 5
+      'navy',       // 6
+      'purple'      // 7
+    ];
+
+    for(var y=1; y<canvas.height-1; y++) {
+      var myImageData = ctx.getImageData(0, y, canvas.width, 1);
+      
+      for(var x = 1; x < canvas.width - 1; x++) {
+
+        if(x > 1) {
+          var prevIndex = (x - 1) * 4
+          var r1 = myImageData.data[prevIndex + 0];
+          var g1 = myImageData.data[prevIndex + 1];
+          var b1 = myImageData.data[prevIndex + 2];
+          var prevPixel = r1 << 16 | g1 << 8 | b1 << 0
+          var a = (prevPixel == 0xffffff);
+        } else {
+          var a = true;
+        }
+
+        var currIndex = (x + 0) * 4;
+        var r2 = myImageData.data[currIndex + 0];
+        var g2 = myImageData.data[currIndex + 1];
+        var b2 = myImageData.data[currIndex + 2];
+        var currPixel = r2 << 16 | g2 << 8 | b2 << 0
+        var b = (currPixel == 0xffffff);
+
+        var nextIndex = (x + 1) * 4;
+        var r3 = myImageData.data[nextIndex + 0];
+        var g3 = myImageData.data[nextIndex + 1];
+        var b3 = myImageData.data[nextIndex + 2];
+        var nextPixel = r3 << 16 | g3 << 8 | b3 << 0
+        var c = (nextPixel == 0xffffff);
+        
+        var abc = a << 2 | b << 1 | c << 0;
+
+        var color = 'white';
+        if(r[abc]) {
+          color = colors[abc];
+        }
+
+        ctx.fillStyle = color;
+        ctx.fillRect(x,y+1,1,1);
       }
     }
-  </script>
- </head>
- <body onload="draw();">
-   <form name="rules" onsubmit="draw();return false;">
-     <table style="display: inline; border-collapse:collapse;">
-       <tr>
-         <td style="width:10px; height:10px; background:black; border: 1px solid black;"></td>
-         <td style="width:10px; height:10px; background:black; border: 1px solid black;"></td>
-         <td style="width:10px; height:10px; background:black; border: 1px solid black;"></td>
-       </tr>
-       <tr><td colspan="3"><input type="checkbox" style="width:30px;" name="rule1"/></td></tr>
-     </table>
-     <table style="display: inline; border-collapse:collapse;">
-       <tr border=1>
-         <td style="width:10px; height:10px; background:black; border: 1px solid black;"></td>
-         <td style="width:10px; height:10px; background:black; border: 1px solid black;"></td>
-         <td style="width:10px; height:10px; background:white; border: 1px solid black;"></td>
-       </tr>
-       <tr><td colspan="3"><input type="checkbox" style="width:30px;" name="rule2"/></td></tr>
-     </table>
-     <table style="display: inline; border-collapse:collapse;">
-       <tr>
-         <td style="width:10px; height:10px; background:black; border: 1px solid black;"></td>
-         <td style="width:10px; height:10px; background:white; border: 1px solid black;"></td>
-         <td style="width:10px; height:10px; background:black; border: 1px solid black;"></td>
-       </tr>
-       <tr><td colspan="3"><input type="checkbox" style="width:30px;" name="rule3"/></td></tr>
-     </table>
-     <table style="display: inline; border-collapse:collapse;">
-       <tr>
-         <td style="width:10px; height:10px; background:black; border: 1px solid black;"></td>
-         <td style="width:10px; height:10px; background:white; border: 1px solid black;"></td>
-         <td style="width:10px; height:10px; background:white; border: 1px solid black;"></td>
-       </tr>
-       <tr><td colspan="3"><input type="checkbox" style="width:30px;" name="rule4" checked="checked"/></td></tr>
-     </table>
-     <table style="display: inline; border-collapse:collapse;">
-       <tr>
-         <td style="width:10px; height:10px; background:white; border: 1px solid black;"></td>
-         <td style="width:10px; height:10px; background:black; border: 1px solid black;"></td>
-         <td style="width:10px; height:10px; background:black; border: 1px solid black;"></td>
-       </tr>
-       <tr><td colspan="3"><input type="checkbox" style="width:30px;" name="rule5" checked="checked"/></td></tr>
-     </table>
-     <table style="display: inline; border-collapse:collapse;">
-       <tr>
-         <td style="width:10px; height:10px; background:white; border: 1px solid black;"></td>
-         <td style="width:10px; height:10px; background:black; border: 1px solid black;"></td>
-         <td style="width:10px; height:10px; background:white; border: 1px solid black;"></td>
-       </tr>
-       <tr><td colspan="3"><input type="checkbox" style="width:30px;" name="rule6" checked="checked"/></td></tr>
-     </table>
-     <table style="display: inline; border-collapse:collapse;">
-       <tr>
-         <td style="width:10px; height:10px; background:white; border: 1px solid black;"></td>
-         <td style="width:10px; height:10px; background:white; border: 1px solid black;"></td>
-         <td style="width:10px; height:10px; background:black; border: 1px solid black;"></td>
-       </tr>
-       <tr><td colspan="3"><input type="checkbox" style="width:30px;" name="rule7" checked="checked"/></td></tr>
-     </table>
-     <table style="display: inline; border-collapse:collapse;">
-       <tr>
-         <td style="width:10px; height:10px; background:white; border: 1px solid black;"></td>
-         <td style="width:10px; height:10px; background:white; border: 1px solid black;"></td>
-         <td style="width:10px; height:10px; background:white; border: 1px solid black;"></td>
-       </tr>
-       <tr><td colspan="3"><input type="checkbox" style="width:30px;" name="rule8"/></td></tr>
-     </table>
-     <input type="submit" value="Redraw"/>
-   </form>
-   <canvas id="canvas" width="500" height="200"></canvas>
- </body>
-</html>
+
+  }
+}
+
+
+    </script>
+  </head>
+  <body onload="draw();">
+    <form name="rules" onsubmit="draw();return false;">
+    <div class="control">
+      <div class="border black"></div>
+      <div class="border black"></div>
+      <div class="border black"></div>
+      <input type="checkbox" name="rule1"/>
+    </div>
+
+    <div class="control">
+      <div class="border black"></div>
+      <div class="border black"></div>
+      <div class="border white"></div>
+      <input type="checkbox" name="rule2"/>
+    </div>
+
+    <div class="control">
+      <div class="border black"></div>
+      <div class="border white"></div>
+      <div class="border black"></div>
+      <input type="checkbox" name="rule3"/>
+    </div>
+
+
+    <div class="control">
+      <div class="border black"></div>
+      <div class="border white"></div>
+      <div class="border white"></div>
+      <input type="checkbox" name="rule4"/>
+    </div>
+
+
+    <div class="control">
+      <div class="border white"></div>
+      <div class="border black"></div>
+      <div class="border black"></div>
+      <input type="checkbox" name="rule5"/>
+    </div>
+
+
+    <div class="control">
+      <div class="border white"></div>
+      <div class="border black"></div>
+      <div class="border white"></div>
+      <input type="checkbox" name="rule6"/>
+    </div>
+
+
+    <div class="control">
+      <div class="border white"></div>
+      <div class="border white"></div>
+      <div class="border black"></div>
+      <input type="checkbox" name="rule7"/>
+    </div>
+
+
+    <div class="control">
+      <div class="border white"></div>
+      <div class="border white"></div>
+      <div class="border white"></div>
+      <input type="checkbox" name="rule8"/>
+    </div>
+
+
+    <input type="submit" value="Redraw"/>
+    </form>
+    <canvas id="canvas" width="500" height="600"></canvas>
+    </body>
+ </html>
