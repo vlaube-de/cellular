@@ -1,0 +1,214 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+ 
+  <script type="application/javascript">
+    function draw() {
+      var canvas = document.getElementById("canvas");
+      if (canvas.getContext) {
+        var ctx = canvas.getContext("2d");
+        ctx.fillStyle = 'rgb(255, 255, 255)';
+        ctx.fillRect(1,1,canvas.width,canvas.height);
+        ctx.fillStyle = 'rgb(0, 0, 0)';
+        ctx.fillRect(canvas.width/2,1,1,1);
+        
+        var r1=document.forms.rules.rule1.checked;
+        var r2=document.forms.rules.rule2.checked;
+        var r3=document.forms.rules.rule3.checked;
+        var r4=document.forms.rules.rule4.checked;
+        var r5=document.forms.rules.rule5.checked;
+        var r6=document.forms.rules.rule6.checked;
+        var r7=document.forms.rules.rule7.checked;
+        var r8=document.forms.rules.rule8.checked;
+        
+        var myImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+        for(var y=1; y<canvas.height-1; y++) {
+//          var myImageData = ctx.getImageData(0, y, canvas.width, 1);
+//          var myImageData2 = ctx.getImageData(0, y, canvas.width, 1);
+          
+          for(var x=1; x<canvas.width-1; x++) {
+            var index = ((y*(canvas.width*4)) + (x*4));
+
+            //var index_a = ((y*(canvas.width*4)) + ((x-1)*4)); // x-1
+            //var index_b = ((y*(canvas.width*4)) + (x*4));
+            //var index_c = ((y*(canvas.width*4)) + ((x+1)*4)); // x+1
+            var a = myImageData.data[index-4] == 0;
+            var b = myImageData.data[index]     == 0;
+            var c = myImageData.data[index+4] == 0;
+            
+            if(x<2) a=0;
+            
+            //var d = ((a&&!b&&!c) || (!a&&b&&c) || (!a&&b&&!c) || (!a&&!b&&c)) ? 0 : 255;
+            var d=255;
+            if(a) {
+              if(b) {
+                if(c && r1) {
+                    d=0;
+                  }
+                } else {
+                  if(r2) {
+                    d=0;
+                  }
+                }
+              } else {
+                if(c && r3) {
+                    d=0;
+                  }
+                } else {
+                  if(r4) {
+                    d=0;
+                  }
+                }
+              }
+            } else {
+              if(b) {
+                if(c && r5) {
+                    d=0;
+                  }
+                } else {
+                  if(r6) {
+                    d=0;
+                  }
+                }
+              } else {
+                if(c && r7) {
+                    d=0;
+                  }
+                } else {
+                  if(r8) {
+                    d=0;
+                  }
+                }
+              }
+            }
+            /*
+            if(a && b && c && r1)
+              d=0;
+            else if(a && b && !c && r2)
+              d=0;
+            else if(a && !b && c && r3)
+              d=0;
+            else if(a && !b && !c && r4)
+              d=0;
+            else if(!a && b && c && r5)
+              d=0;
+            else if(!a && b && !c && r6)
+              d=0;
+            else if(!a && !b && c && r7)
+              d=0;
+            else if(!a && !b && !c && r8)
+              d=0;
+            */
+            
+            //var index_d = (((y+1)*(canvas.width*4)) + (x*4)); // y+1
+            myImageData.data[index+(canvas.width*4)]   = d;
+            myImageData.data[index+(canvas.width*4)+1] = d;
+            myImageData.data[index+(canvas.width*4)+2] = d;
+          }
+        }
+        ctx.putImageData(myImageData, 0, 0);
+      }
+    }
+  </script>
+ </head><body onload="draw();">
+   <form name="rules" onsubmit="draw();return false;">
+     <table style="display: inline; border-collapse: collapse;">
+       <tbody><tr>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% black; border: 1px solid black;"></td>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% black; border: 1px solid black;"></td>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% black; border: 1px solid black;"></td>
+       </tr>
+       <tr><td colspan="3"><input style="width: 30px;" name="rule1" 
+type="checkbox"></td></tr>
+     </tbody></table>
+     <table style="display: inline; border-collapse: collapse;">
+       <tbody><tr border="1">
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% black; border: 1px solid black;"></td>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% black; border: 1px solid black;"></td>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% white; border: 1px solid black;"></td>
+       </tr>
+       <tr><td colspan="3"><input style="width: 30px;" name="rule2" 
+type="checkbox"></td></tr>
+     </tbody></table>
+     <table style="display: inline; border-collapse: collapse;">
+       <tbody><tr>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% black; border: 1px solid black;"></td>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% white; border: 1px solid black;"></td>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% black; border: 1px solid black;"></td>
+       </tr>
+       <tr><td colspan="3"><input style="width: 30px;" name="rule3" 
+type="checkbox"></td></tr>
+     </tbody></table>
+     <table style="display: inline; border-collapse: collapse;">
+       <tbody><tr>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% black; border: 1px solid black;"></td>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% white; border: 1px solid black;"></td>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% white; border: 1px solid black;"></td>
+       </tr>
+       <tr><td colspan="3"><input style="width: 30px;" name="rule4" 
+checked="checked" type="checkbox"></td></tr>
+     </tbody></table>
+     <table style="display: inline; border-collapse: collapse;">
+       <tbody><tr>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% white; border: 1px solid black;"></td>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% black; border: 1px solid black;"></td>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% black; border: 1px solid black;"></td>
+       </tr>
+       <tr><td colspan="3"><input style="width: 30px;" name="rule5" 
+type="checkbox"></td></tr>
+     </tbody></table>
+     <table style="display: inline; border-collapse: collapse;">
+       <tbody><tr>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% white; border: 1px solid black;"></td>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% black; border: 1px solid black;"></td>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% white; border: 1px solid black;"></td>
+       </tr>
+       <tr><td colspan="3"><input style="width: 30px;" name="rule6" 
+checked="checked" type="checkbox"></td></tr>
+     </tbody></table>
+     <table style="display: inline; border-collapse: collapse;">
+       <tbody><tr>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% white; border: 1px solid black;"></td>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% white; border: 1px solid black;"></td>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% black; border: 1px solid black;"></td>
+       </tr>
+       <tr><td colspan="3"><input style="width: 30px;" name="rule7" 
+checked="checked" type="checkbox"></td></tr>
+     </tbody></table>
+     <table style="display: inline; border-collapse: collapse;">
+       <tbody><tr>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% white; border: 1px solid black;"></td>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% white; border: 1px solid black;"></td>
+         <td style="width: 10px; height: 10px; background: none repeat 
+scroll 0% 0% white; border: 1px solid black;"></td>
+       </tr>
+       <tr><td colspan="3"><input style="width: 30px;" name="rule8" 
+type="checkbox"></td></tr>
+     </tbody></table>
+     <input value="Redraw" type="submit">
+   </form>
+   <canvas id="canvas" width="1000" height="500"></canvas>
+ </body></html>
