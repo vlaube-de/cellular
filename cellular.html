@@ -41,7 +41,7 @@ div.border.white, td.border.white {
     <script type="application/javascript">
 
 
-function draw() {
+function init() {
   // rule 30 https://en.wikipedia.org/wiki/Rule_30
   var rule = 30;
 
@@ -51,26 +51,24 @@ function draw() {
   // rule 110 https://en.wikipedia.org/wiki/Rule_110
   // var rule = 110;
 
+  var checkboxElements = document.querySelectorAll('#controls input');
   for(var i = 0; i < 8; ++i) {
     var checked = !!(rule & (1 << i));
-    document.forms.rules['rule' + (8 - i)].checked = checked ? 'checked' : '';
+    checkboxElements[7 - i].checked = checked ? 'checked' : '';
   }
+}
 
+function draw() {
   var canvas = document.getElementById('canvas');
 
   if (canvas.getContext) {
     var ctx = canvas.getContext('2d');
     
-    var r = [
-      document.forms.rules.rule1.checked,
-      document.forms.rules.rule2.checked,
-      document.forms.rules.rule3.checked,
-      document.forms.rules.rule4.checked,
-      document.forms.rules.rule5.checked,
-      document.forms.rules.rule6.checked,
-      document.forms.rules.rule7.checked,
-      document.forms.rules.rule8.checked,
-    ];
+    var checkboxElements = document.querySelectorAll('#controls input');
+    var r = [];
+    for (var i = 0; i < checkboxElements.length; i++) {
+      r[i] = checkboxElements[i].checked;
+    }
 
     var white = 0xffffffff;
     var black = 0xff000000;
@@ -127,72 +125,70 @@ function draw() {
 
     </script>
   </head>
-  <body onload="draw();">
-    <form name="rules" onsubmit="draw();return false;">
-    <div class="control">
-      <div class="border black"></div>
-      <div class="border black"></div>
-      <div class="border black"></div>
-      <input type="checkbox" name="rule1"/>
+  <body onload="init();draw();">
+    <div id="controls">
+      <div class="control">
+        <div class="border black"></div>
+        <div class="border black"></div>
+        <div class="border black"></div>
+        <input type="checkbox" onclick="draw();" />
+      </div>
+
+      <div class="control">
+        <div class="border black"></div>
+        <div class="border black"></div>
+        <div class="border white"></div>
+        <input type="checkbox" onclick="draw();" />
+      </div>
+
+      <div class="control">
+        <div class="border black"></div>
+        <div class="border white"></div>
+        <div class="border black"></div>
+        <input type="checkbox" onclick="draw();" />
+      </div>
+
+
+      <div class="control">
+        <div class="border black"></div>
+        <div class="border white"></div>
+        <div class="border white"></div>
+        <input type="checkbox" onclick="draw();" />
+      </div>
+
+
+      <div class="control">
+        <div class="border white"></div>
+        <div class="border black"></div>
+        <div class="border black"></div>
+        <input type="checkbox" onclick="draw();" />
+      </div>
+
+
+      <div class="control">
+        <div class="border white"></div>
+        <div class="border black"></div>
+        <div class="border white"></div>
+        <input type="checkbox" onclick="draw();" />
+      </div>
+
+
+      <div class="control">
+        <div class="border white"></div>
+        <div class="border white"></div>
+        <div class="border black"></div>
+        <input type="checkbox" onclick="draw();" />
+      </div>
+
+
+      <div class="control">
+        <div class="border white"></div>
+        <div class="border white"></div>
+        <div class="border white"></div>
+        <input type="checkbox" onclick="draw();" />
+      </div>
     </div>
 
-    <div class="control">
-      <div class="border black"></div>
-      <div class="border black"></div>
-      <div class="border white"></div>
-      <input type="checkbox" name="rule2"/>
-    </div>
-
-    <div class="control">
-      <div class="border black"></div>
-      <div class="border white"></div>
-      <div class="border black"></div>
-      <input type="checkbox" name="rule3"/>
-    </div>
-
-
-    <div class="control">
-      <div class="border black"></div>
-      <div class="border white"></div>
-      <div class="border white"></div>
-      <input type="checkbox" name="rule4"/>
-    </div>
-
-
-    <div class="control">
-      <div class="border white"></div>
-      <div class="border black"></div>
-      <div class="border black"></div>
-      <input type="checkbox" name="rule5"/>
-    </div>
-
-
-    <div class="control">
-      <div class="border white"></div>
-      <div class="border black"></div>
-      <div class="border white"></div>
-      <input type="checkbox" name="rule6"/>
-    </div>
-
-
-    <div class="control">
-      <div class="border white"></div>
-      <div class="border white"></div>
-      <div class="border black"></div>
-      <input type="checkbox" name="rule7"/>
-    </div>
-
-
-    <div class="control">
-      <div class="border white"></div>
-      <div class="border white"></div>
-      <div class="border white"></div>
-      <input type="checkbox" name="rule8"/>
-    </div>
-
-
-    <input type="submit" value="Redraw"/>
-    </form>
-    <canvas id="canvas" width="500" height="200"></canvas>
+    <canvas id="canvas" width="1000" height="500"></canvas>
     </body>
  </html>
