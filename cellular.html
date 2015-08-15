@@ -43,13 +43,13 @@ div.border.white, td.border.white {
 
 function draw() {
   // rule 30 https://en.wikipedia.org/wiki/Rule_30
-  // var rule = 30;
+  var rule = 30;
 
   // rule 90 https://en.wikipedia.org/wiki/Rule_90
   // var rule = 90;
 
   // rule 110 https://en.wikipedia.org/wiki/Rule_110
-  var rule = 110;
+  // var rule = 110;
 
   for(var i = 0; i < 8; ++i) {
     var checked = !!(rule & (1 << i));
@@ -57,12 +57,9 @@ function draw() {
   }
 
   var canvas = document.getElementById('canvas');
+
   if (canvas.getContext) {
     var ctx = canvas.getContext('2d');
-    ctx.fillStyle = 'rgb(255, 255, 255)';
-    ctx.fillRect(1,1,canvas.width,canvas.height);
-    ctx.fillStyle = 'rgb(0, 0, 0)';
-    ctx.fillRect(canvas.width/2,1,1,1);
     
     var r = [
       document.forms.rules.rule1.checked,
@@ -72,60 +69,56 @@ function draw() {
       document.forms.rules.rule5.checked,
       document.forms.rules.rule6.checked,
       document.forms.rules.rule7.checked,
-      document.forms.rules.rule8.checked
+      document.forms.rules.rule8.checked,
     ];
 
+    var white = 0xffffffff;
+    var black = 0xff000000;
     var colors = [
-      'fuchsia',    // 0
-      'red',        // 1
-      'orange',     // 2
-      'yellow',     // 3
-      'green',      // 4
-      'dodgerblue', // 5
-      'navy',       // 6
-      'purple'      // 7
+      0xFFFF00FF, // fuchsia
+      0xFF0000FF, // red
+      0xFF00A5FF, // orange
+      0xFF00FFFF, // yellow
+      0xFF008000, // green
+      0xFFFF901E, // dodgerblue
+      0xFF800000, // navy
+      0xFF800080, // purple
     ];
 
-    for(var y=1; y<canvas.height-1; y++) {
-      var myImageData = ctx.getImageData(0, y, canvas.width, 1);
-      
-      for(var x = 1; x < canvas.width - 1; x++) {
+    var outImageData = ctx.createImageData(canvas.width, 1);
+    var outPixels = new Uint32Array(outImageData.data.buffer);
 
-        if(x > 1) {
-          var prevIndex = (x - 1) * 4
-          var r1 = myImageData.data[prevIndex + 0];
-          var g1 = myImageData.data[prevIndex + 1];
-          var b1 = myImageData.data[prevIndex + 2];
-          var prevPixel = r1 << 16 | g1 << 8 | b1 << 0
-          var a = (prevPixel == 0xffffff);
-        } else {
-          var a = true;
-        }
-
-        var currIndex = (x + 0) * 4;
-        var r2 = myImageData.data[currIndex + 0];
-        var g2 = myImageData.data[currIndex + 1];
-        var b2 = myImageData.data[currIndex + 2];
-        var currPixel = r2 << 16 | g2 << 8 | b2 << 0
-        var b = (currPixel == 0xffffff);
-
-        var nextIndex = (x + 1) * 4;
-        var r3 = myImageData.data[nextIndex + 0];
-        var g3 = myImageData.data[nextIndex + 1];
-        var b3 = myImageData.data[nextIndex + 2];
-        var nextPixel = r3 << 16 | g3 << 8 | b3 << 0
-        var c = (nextPixel == 0xffffff);
-        
-        var abc = a << 2 | b << 1 | c << 0;
-
-        var color = 'white';
-        if(r[abc]) {
-          color = colors[abc];
-        }
-
-        ctx.fillStyle = color;
-        ctx.fillRect(x,y+1,1,1);
+    // initialize canvas with single black pixel in the middle of the first row
+    for(var x = 0; x < canvas.width; x++) {
+      var color = white;
+      if(x == Math.floor(canvas.width / 2)) {
+        color = black;
       }
+      outPixels[x] = color;
+    }
+    ctx.putImageData(outImageData, 0, 0);
+
+    for(var y = 0; y < canvas.height; y++) {
+      var inImageData = ctx.getImageData(0, y, canvas.width, 1);
+      var inPixels = new Uint32Array(inImageData.data.buffer);
+
+      for(var x = 1; x < canvas.width-1; x++) {
+
+        var prevPixel = inPixels[x - 1];
+        var currPixel = inPixels[x];
+        var nextPixel = inPixels[x + 1];
+        
+        var prevBit = (prevPixel == white) ? 1 : 0;
+        var currBit = (currPixel == white) ? 1 : 0;
+        var nextBit = (nextPixel == white) ? 1 : 0;
+
+        var colorIndex = prevBit << 2 | currBit << 1 | nextBit << 0;
+        var color = r[colorIndex] ? colors[colorIndex] : white;
+
+        outPixels[x] = color;
+      }
+
+      ctx.putImageData(outImageData, 0, y + 1);
     }
 
   }
@@ -200,6 +193,6 @@ function draw() {
 
     <input type="submit" value="Redraw"/>
     </form>
-    <canvas id="canvas" width="500" height="600"></canvas>
+    <canvas id="canvas" width="500" height="200"></canvas>
     </body>
  </html>
