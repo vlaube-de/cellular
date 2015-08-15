@@ -58,6 +58,8 @@ var getBitArray = function (n, count) {
 }
 
 function Controls(container) {
+  this.inputElements = [];
+
   for (var i = 0; i < 8; i++) {
     var controlElement = document.createElement('div');
     controlElement.className = 'control';
@@ -75,27 +77,27 @@ function Controls(container) {
     checkboxElement.type = 'checkbox';
     checkboxElement.addEventListener('click', draw);
     controlElement.appendChild(checkboxElement);
+    this.inputElements.push(checkboxElement);
 
     container.appendChild(controlElement);
   }
 
-  this.elements = document.querySelectorAll('#controls .control input');
   return this;
 } 
 
 Controls.prototype.getBitArray = function () {
     var result = [];
-    for (var i = 0; i < this.elements.length; i++) {
-      result[i] = this.elements[i].checked;
+    for (var i = 0; i < this.inputElements.length; i++) {
+      result[i] = this.inputElements[i].checked;
     }
     return result;
 };
 
 Controls.prototype.set = function (n) {
-  var isChecked = getBitArray(n, this.elements.length);
+  var isChecked = getBitArray(n, this.inputElements.length);
 
-  for(var i = 0; i < this.elements.length; ++i) {
-    this.elements[i].checked = isChecked[i] ? 'checked' : '';
+  for(var i = 0; i < this.inputElements.length; ++i) {
+    this.inputElements[i].checked = isChecked[i] ? 'checked' : '';
   }
 }
 
