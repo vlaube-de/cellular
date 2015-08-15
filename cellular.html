@@ -9,19 +9,19 @@
 * {
   box-sizing: border-box;
 }
-table {
-  display: inline;
-  border-collapse: collapse;
-}
+
 div.control {
   display: inline-block;
   width: 30px;
-  text-align: center
+  text-align: center;
+  margin: 3px;
 }
+
 div.border {
   display: inline-block;
   float: left;
 }
+
 div.border, td.border {
   width: 10px;
   height: 10px;
@@ -29,11 +29,11 @@ div.border, td.border {
 }
 
 div.border.black, td.border.black {
-  background: black;
+  background-color: black;
 }
 
 div.border.white, td.border.white {
-  background: white;
+  background-color: white;
 }
 
 
@@ -41,7 +41,70 @@ div.border.white, td.border.white {
     <script type="application/javascript">
 
 
+var getBitArray = function (n, count) {
+  var binaryString = n.toString(2);
+  count = count || binaryString.length;
+
+  var result = [];
+  var missingCount = count - binaryString.length;
+  for (var i = 0; i < count; i++) {
+    if(i < missingCount) {
+      result[i] = false;
+    } else {
+      result[i] = binaryString[i - missingCount] === '1';
+    }
+  }
+  return result;
+}
+
+function Controls(container) {
+  for (var i = 0; i < 8; i++) {
+    var controlElement = document.createElement('div');
+    controlElement.className = 'control';
+
+    var neighborhoodWidth = 3;
+    var bits = getBitArray(i, neighborhoodWidth);
+
+    for (var j = 0; j < neighborhoodWidth; j++) {
+      var blockElement = document.createElement('div');
+      blockElement.className = 'border ' + (bits[j] ? 'white' : 'black');
+      controlElement.appendChild(blockElement);
+    }
+
+    var checkboxElement = document.createElement('input');
+    checkboxElement.type = 'checkbox';
+    checkboxElement.addEventListener('click', draw);
+    controlElement.appendChild(checkboxElement);
+
+    container.appendChild(controlElement);
+  }
+
+  this.elements = document.querySelectorAll('#controls .control input');
+  return this;
+} 
+
+Controls.prototype.getBitArray = function () {
+    var result = [];
+    for (var i = 0; i < this.elements.length; i++) {
+      result[i] = this.elements[i].checked;
+    }
+    return result;
+};
+
+Controls.prototype.set = function (n) {
+  var isChecked = getBitArray(n, this.elements.length);
+
+  for(var i = 0; i < this.elements.length; ++i) {
+    this.elements[i].checked = isChecked[i] ? 'checked' : '';
+  }
+}
+
+var controls;
+
 function init() {
+  var container = document.getElementById('controls');
+  controls = new Controls(container);
+
   // rule 30 https://en.wikipedia.org/wiki/Rule_30
   var rule = 30;
 
@@ -51,11 +114,7 @@ function init() {
   // rule 110 https://en.wikipedia.org/wiki/Rule_110
   // var rule = 110;
 
-  var checkboxElements = document.querySelectorAll('#controls input');
-  for(var i = 0; i < 8; ++i) {
-    var checked = !!(rule & (1 << i));
-    checkboxElements[7 - i].checked = checked ? 'checked' : '';
-  }
+  controls.set(rule);
 }
 
 function draw() {
@@ -64,13 +123,9 @@ function draw() {
   if (canvas.getContext) {
     var ctx = canvas.getContext('2d');
     
-    var checkboxElements = document.querySelectorAll('#controls input');
-    var r = [];
-    for (var i = 0; i < checkboxElements.length; i++) {
-      r[i] = checkboxElements[i].checked;
-    }
+    var r = controls.getBitArray();
 
-    var white = 0xffffffff;
+    var white = 0xFFFFFFFF;
     var black = 0xff000000;
     var colors = [
       0xFFFF00FF, // fuchsia
@@ -126,69 +181,7 @@ function draw() {
     </script>
   </head>
   <body onload="init();draw();">
-    <div id="controls">
-      <div class="control">
-        <div class="border black"></div>
-        <div class="border black"></div>
-        <div class="border black"></div>
-        <input type="checkbox" onclick="draw();" />
-      </div>
-
-      <div class="control">
-        <div class="border black"></div>
-        <div class="border black"></div>
-        <div class="border white"></div>
-        <input type="checkbox" onclick="draw();" />
-      </div>
-
-      <div class="control">
-        <div class="border black"></div>
-        <div class="border white"></div>
-        <div class="border black"></div>
-        <input type="checkbox" onclick="draw();" />
-      </div>
-
-
-      <div class="control">
-        <div class="border black"></div>
-        <div class="border white"></div>
-        <div class="border white"></div>
-        <input type="checkbox" onclick="draw();" />
-      </div>
-
-
-      <div class="control">
-        <div class="border white"></div>
-        <div class="border black"></div>
-        <div class="border black"></div>
-        <input type="checkbox" onclick="draw();" />
-      </div>
-
-
-      <div class="control">
-        <div class="border white"></div>
-        <div class="border black"></div>
-        <div class="border white"></div>
-        <input type="checkbox" onclick="draw();" />
-      </div>
-
-
-      <div class="control">
-        <div class="border white"></div>
-        <div class="border white"></div>
-        <div class="border black"></div>
-        <input type="checkbox" onclick="draw();" />
-      </div>
-
-
-      <div class="control">
-        <div class="border white"></div>
-        <div class="border white"></div>
-        <div class="border white"></div>
-        <input type="checkbox" onclick="draw();" />
-      </div>
-    </div>
-
+    <div id="controls"></div>
     <canvas id="canvas" width="1000" height="500"></canvas>
     </body>
  </html>
