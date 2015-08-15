@@ -10,6 +10,12 @@
   box-sizing: border-box;
 }
 
+div#controls {
+  position: fixed;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 3px;
+}
+
 div.control {
   display: inline-block;
   width: 30px;
@@ -102,10 +108,36 @@ Controls.prototype.set = function (n) {
 }
 
 var controls;
+var getInitialValue;
+
+function pulse (x, size) {
+  return x == Math.floor(size / 2);
+}
+function random (x) {
+  return Math.random() > 0.5;
+}
 
 function init() {
   var container = document.getElementById('controls');
   controls = new Controls(container);
+
+  var labelElement = document.createElement('label');
+
+  var randomizeElement = document.createElement('input');
+  randomizeElement.type = 'checkbox';
+  randomizeElement.addEventListener('click', function (e) {
+    if(e.target.checked) {
+      getInitialValue = random;
+    } else {
+      getInitialValue = pulse;
+    }
+    draw();
+  });
+
+  labelElement.textContent = 'Random Input';
+  labelElement.insertBefore(randomizeElement, labelElement.firstChild);
+
+  container.appendChild(labelElement);
 
   // rule 30 https://en.wikipedia.org/wiki/Rule_30
   var rule = 30;
@@ -117,6 +149,7 @@ function init() {
   // var rule = 110;
 
   controls.set(rule);
+  getInitialValue = pulse;
 }
 
 function draw() {
@@ -145,27 +178,30 @@ function draw() {
 
     // initialize canvas with single black pixel in the middle of the first row
     for(var x = 0; x < canvas.width; x++) {
-      var color = white;
-      if(x == Math.floor(canvas.width / 2)) {
-        color = black;
+      if(getInitialValue(x, canvas.width)) {
+        var color = black;
+      } else {
+        var color = white;
       }
       outPixels[x] = color;
     }
     ctx.putImageData(outImageData, 0, 0);
 
+
+
     for(var y = 0; y < canvas.height; y++) {
       var inImageData = ctx.getImageData(0, y, canvas.width, 1);
       var inPixels = new Uint32Array(inImageData.data.buffer);
 
-      for(var x = 1; x < canvas.width-1; x++) {
+      for(var x = 0; x < canvas.width; x++) {
 
         var prevPixel = inPixels[x - 1];
         var currPixel = inPixels[x];
         var nextPixel = inPixels[x + 1];
         
-        var prevBit = (prevPixel == white) ? 1 : 0;
-        var currBit = (currPixel == white) ? 1 : 0;
-        var nextBit = (nextPixel == white) ? 1 : 0;
+        var prevBit = (prevPixel === white || prevPixel === undefined) ? 1 : 0;
+        var currBit = (currPixel === white) ? 1 : 0;
+        var nextBit = (nextPixel === white || nextPixel === undefined) ? 1 : 0;
 
         var colorIndex = prevBit << 2 | currBit << 1 | nextBit << 0;
         var color = r[colorIndex] ? colors[colorIndex] : white;
@@ -184,6 +220,6 @@ function draw() {
   </head>
   <body onload="init();draw();">
     <div id="controls"></div>
-    <canvas id="canvas" width="1000" height="500"></canvas>
+    <canvas id="canvas" width="5000" height="2500"></canvas>
     </body>
  </html>
