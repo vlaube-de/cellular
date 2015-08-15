@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Cellular Automatons</title>
+    <title>Cellular Automaton</title>
     <style type="text/css">
 
 
@@ -43,27 +43,22 @@ div.border.white, td.border.white {
 
 function draw() {
   // rule 30 https://en.wikipedia.org/wiki/Rule_30
-  // document.forms.rules.rule4.checked = 'checked';
-  // document.forms.rules.rule5.checked = 'checked';
-  // document.forms.rules.rule6.checked = 'checked';
-  // document.forms.rules.rule7.checked = 'checked';
+  // var rule = 30;
 
   // rule 90 https://en.wikipedia.org/wiki/Rule_90
-  // document.forms.rules.rule2.checked = 'checked';
-  // document.forms.rules.rule4.checked = 'checked';
-  // document.forms.rules.rule5.checked = 'checked';
-  // document.forms.rules.rule7.checked = 'checked';
+  // var rule = 90;
 
   // rule 110 https://en.wikipedia.org/wiki/Rule_110
-  document.forms.rules.rule2.checked = 'checked';
-  document.forms.rules.rule3.checked = 'checked';
-  document.forms.rules.rule5.checked = 'checked';
-  document.forms.rules.rule6.checked = 'checked';
-  document.forms.rules.rule7.checked = 'checked';
+  var rule = 110;
 
-  var canvas = document.getElementById("canvas");
+  for(var i = 0; i < 8; ++i) {
+    var checked = !!(rule & (1 << i));
+    document.forms.rules['rule' + (8 - i)].checked = checked ? 'checked' : '';
+  }
+
+  var canvas = document.getElementById('canvas');
   if (canvas.getContext) {
-    var ctx = canvas.getContext("2d");
+    var ctx = canvas.getContext('2d');
     ctx.fillStyle = 'rgb(255, 255, 255)';
     ctx.fillRect(1,1,canvas.width,canvas.height);
     ctx.fillStyle = 'rgb(0, 0, 0)';
