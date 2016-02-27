@@ -65,6 +65,7 @@ var getBitArray = function (n, count) {
 
 function Controls(container) {
   this.inputElements = [];
+  this.randomize = false;
 
   for (var i = 0; i < 8; i++) {
     var controlElement = document.createElement('div');
@@ -88,6 +89,24 @@ function Controls(container) {
     container.appendChild(controlElement);
   }
 
+  var labelElement = document.createElement('label');
+
+  var randomizeElement = document.createElement('input');
+  randomizeElement.type = 'checkbox';
+  if(this.randomize) {
+    randomizeElement.checked = 'checked';
+  }
+  var controls = this;
+  randomizeElement.addEventListener('click', function (e) {
+    controls.randomize = e.target.checked;
+    draw();
+  });
+
+  labelElement.textContent = 'Random Input';
+  labelElement.insertBefore(randomizeElement, labelElement.firstChild);
+
+  container.appendChild(labelElement);
+
   return this;
 } 
 
@@ -108,36 +127,10 @@ Controls.prototype.set = function (n) {
 }
 
 var controls;
-var getInitialValue;
-
-function pulse (x, size) {
-  return x == Math.floor(size / 2);
-}
-function random (x) {
-  return Math.random() > 0.5;
-}
 
 function init() {
   var container = document.getElementById('controls');
   controls = new Controls(container);
-
-  var labelElement = document.createElement('label');
-
-  var randomizeElement = document.createElement('input');
-  randomizeElement.type = 'checkbox';
-  randomizeElement.addEventListener('click', function (e) {
-    if(e.target.checked) {
-      getInitialValue = random;
-    } else {
-      getInitialValue = pulse;
-    }
-    draw();
-  });
-
-  labelElement.textContent = 'Random Input';
-  labelElement.insertBefore(randomizeElement, labelElement.firstChild);
-
-  container.appendChild(labelElement);
 
   // rule 30 https://en.wikipedia.org/wiki/Rule_30
   var rule = 30;
@@ -149,7 +142,6 @@ function init() {
   // var rule = 110;
 
   controls.set(rule);
-  getInitialValue = pulse;
 }
 
 function draw() {
@@ -178,7 +170,16 @@ function draw() {
 
     // initialize first row
     for(var x = 0; x < canvas.width; x++) {
-      pixels[x] = getInitialValue(x, canvas.width) ? black : white;
+      var color;
+
+      if(controls.randomize) {
+        color = Math.random() > 0.5 ? black : white;
+      } else {
+        var isCenter = x == (Math.floor(canvas.width / 2));
+        color = isCenter ? black : white;
+      }
+
+      pixels[x] = color;
     }
 
     var outIndex = canvas.width;
