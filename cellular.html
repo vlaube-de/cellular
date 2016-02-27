@@ -173,31 +173,22 @@ function draw() {
       0xFF800080, // purple
     ];
 
-    var outImageData = ctx.createImageData(canvas.width, 1);
-    var outPixels = new Uint32Array(outImageData.data.buffer);
+    var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    var pixels = new Uint32Array(imageData.data.buffer);
 
-    // initialize canvas with single black pixel in the middle of the first row
+    // initialize first row
     for(var x = 0; x < canvas.width; x++) {
-      if(getInitialValue(x, canvas.width)) {
-        var color = black;
-      } else {
-        var color = white;
-      }
-      outPixels[x] = color;
+      pixels[x] = getInitialValue(x, canvas.width) ? black : white;
     }
-    ctx.putImageData(outImageData, 0, 0);
 
-
+    var outIndex = canvas.width;
+    var inIndex = 0;
 
     for(var y = 0; y < canvas.height; y++) {
-      var inImageData = ctx.getImageData(0, y, canvas.width, 1);
-      var inPixels = new Uint32Array(inImageData.data.buffer);
-
       for(var x = 0; x < canvas.width; x++) {
-
-        var prevPixel = inPixels[x - 1];
-        var currPixel = inPixels[x];
-        var nextPixel = inPixels[x + 1];
+        var prevPixel = pixels[inIndex + x - 1];
+        var currPixel = pixels[inIndex + x];
+        var nextPixel = pixels[inIndex + x + 1];
         
         var prevBit = (prevPixel === white || prevPixel === undefined) ? 1 : 0;
         var currBit = (currPixel === white) ? 1 : 0;
@@ -206,11 +197,13 @@ function draw() {
         var colorIndex = prevBit << 2 | currBit << 1 | nextBit << 0;
         var color = r[colorIndex] ? colors[colorIndex] : white;
 
-        outPixels[x] = color;
+        pixels[outIndex + x] = color;
       }
-
-      ctx.putImageData(outImageData, 0, y + 1);
+      outIndex += canvas.width;
+      inIndex += canvas.width;
     }
+
+    ctx.putImageData(imageData, 0, 0);
 
   }
 }
