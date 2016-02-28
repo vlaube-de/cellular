@@ -132,6 +132,12 @@ function init() {
   var container = document.getElementById('controls');
   controls = new Controls(container);
 
+  // center canvas
+  // NOTE(vlaube): won't work without timeout, don't know why
+  window.setTimeout(function() {
+    document.body.scrollLeft = (document.body.scrollWidth - window.screen.availWidth) / 2;
+  }, 1);
+
   // rule 30 https://en.wikipedia.org/wiki/Rule_30
   var rule = 30;
 
