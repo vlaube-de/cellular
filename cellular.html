@@ -152,69 +152,65 @@ function init() {
 
 function draw() {
   var canvas = document.getElementById('canvas');
+  var ctx = canvas.getContext('2d');
+  var h = canvas.height;
+  var w = canvas.width;
+  
+  var r = controls.getBitArray();
 
-  if (canvas.getContext) {
-    var ctx = canvas.getContext('2d');
-    var h = canvas.height;
-    var w = canvas.width;
-    
-    var r = controls.getBitArray();
+  var white = 0xFFFFFFFF;
+  var black = 0xff000000;
+  var colors = [
+    0xFFFF00FF, // fuchsia
+    0xFF0000FF, // red
+    0xFF00A5FF, // orange
+    0xFF00FFFF, // yellow
+    0xFF008000, // green
+    0xFFFF901E, // dodgerblue
+    0xFF800000, // navy
+    0xFF800080, // purple
+  ];
 
-    var white = 0xFFFFFFFF;
-    var black = 0xff000000;
-    var colors = [
-      0xFFFF00FF, // fuchsia
-      0xFF0000FF, // red
-      0xFF00A5FF, // orange
-      0xFF00FFFF, // yellow
-      0xFF008000, // green
-      0xFFFF901E, // dodgerblue
-      0xFF800000, // navy
-      0xFF800080, // purple
-    ];
+  var imageData = ctx.getImageData(0, 0, w, h);
+  var pixels = new Uint32Array(imageData.data.buffer);
 
-    var imageData = ctx.getImageData(0, 0, w, h);
-    var pixels = new Uint32Array(imageData.data.buffer);
+  // initialize first row
+  for(var x = 0; x < w; x++) {
+    var color;
 
-    // initialize first row
-    for(var x = 0; x < w; x++) {
-      var color;
-
-      if(controls.randomize) {
-        color = Math.random() > 0.5 ? black : white;
-      } else {
-        var isCenter = x == (Math.floor(w / 2));
-        color = isCenter ? black : white;
-      }
-
-      pixels[x] = color;
+    if(controls.randomize) {
+      color = Math.random() > 0.5 ? black : white;
+    } else {
+      var isCenter = x == (Math.floor(w / 2));
+      color = isCenter ? black : white;
     }
 
-    var outIndex = w;
-    var inIndex = 0;
-
-    for(var y = 0; y < h; y++) {
-      for(var x = 0; x < w; x++) {
-        var prevPixel = (x > 0) ? pixels[inIndex + x - 1] : white;
-        var currPixel = pixels[inIndex + x];
-        var nextPixel = (x < w - 1) ? pixels[inIndex + x + 1] : white;
-        
-        var prevBit = (prevPixel === white || prevPixel === undefined) ? 1 : 0;
-        var currBit = (currPixel === white) ? 1 : 0;
-        var nextBit = (nextPixel === white || nextPixel === undefined) ? 1 : 0;
-
-        var colorIndex = prevBit << 2 | currBit << 1 | nextBit << 0;
-        var color = r[colorIndex] ? colors[colorIndex] : white;
-
-        pixels[outIndex + x] = color;
-      }
-      outIndex += w;
-      inIndex += w;
-    }
-
-    ctx.putImageData(imageData, 0, 0);
-
+    pixels[x] = color;
   }
+
+  var outIndex = w;
+  var inIndex = 0;
+
+  for(var y = 0; y < h; y++) {
+    for(var x = 0; x < w; x++) {
+      var prevPixel = (x > 0) ? pixels[inIndex + x - 1] : white;
+      var currPixel = pixels[inIndex + x];
+      var nextPixel = (x < w - 1) ? pixels[inIndex + x + 1] : white;
+      
+      var prevBit = (prevPixel === white || prevPixel === undefined) ? 1 : 0;
+      var currBit = (currPixel === white) ? 1 : 0;
+      var nextBit = (nextPixel === white || nextPixel === undefined) ? 1 : 0;
+
+      var colorIndex = prevBit << 2 | currBit << 1 | nextBit << 0;
+      var color = r[colorIndex] ? colors[colorIndex] : white;
+
+      pixels[outIndex + x] = color;
+    }
+    outIndex += w;
+    inIndex += w;
+  }
+
+  ctx.putImageData(imageData, 0, 0);
 }
 
 
