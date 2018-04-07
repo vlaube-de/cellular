@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Cellular Automaton</title>
+    <style type="text/css">
+
+
+* {
+  box-sizing: border-box;
+}
+
+div#controls {
+  position: fixed;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 3px;
+}
+
+div#controls label {
+  margin: 3px;
+}
+
+div.control {
+  display: inline-block;
+  width: 30px;
+  text-align: center;
+  margin: 3px;
+}
+
+div.border {
+  display: inline-block;
+  float: left;
+}
+
+div.border, td.border {
+  width: 10px;
+  height: 10px;
+  border: 1px solid black;
+}
+
+div.border.black, td.border.black {
+  background-color: black;
+}
+
+div.border.white, td.border.white {
+  background-color: white;
+}
+
+
+    </style>
+    <script type="application/javascript">
+
+
+var getBitArray = function (n, count) {
+  var binaryString = n.toString(2);
+  count = count || binaryString.length;
+
+  var result = [];
+  var missingCount = count - binaryString.length;
+  for (var i = 0; i < count; i++) {
+    if(i < missingCount) {
+      result[i] = false;
+    } else {
+      result[i] = binaryString[i - missingCount] === '1';
+    }
+  }
+  return result;
+}
+
+function Controls(container) {
+  var controls = this;
+
+  controls.inputElements = [];
+  controls.randomize = false;
+  controls.colorize = false;
+  controls.suppressDrawing = false;
+
+  for (var i = 0; i < 8; i++) {
+    var controlElement = document.createElement('div');
+    controlElement.className = 'control';
+
+    var neighborhoodWidth = 3;
+    var bits = getBitArray(i, neighborhoodWidth);
+
+    for (var j = 0; j < neighborhoodWidth; j++) {
+      var blockElement = document.createElement('div');
+      blockElement.className = 'border ' + (bits[j] ? 'white' : 'black');
+      controlElement.appendChild(blockElement);
+    }
+
+    var checkboxElement = document.createElement('input');
+    checkboxElement.type = 'checkbox';
+    checkboxElement.addEventListener('change', function(e) {
+      var oldSupressDrawing = controls.suppressDrawing;
+
+      controls.suppressDrawing = true;
+      var ruleId = controls.getDecimalRepresentation();
+      var shouldUpdateCheckboxes = false;
+      var shouldUpdateSelection = true;
+      controls.set(ruleId, shouldUpdateCheckboxes, shouldUpdateSelection);
+      controls.suppressDrawing = oldSupressDrawing;
+
+      if(!controls.suppressDrawing) {
+        var shouldInitializeFirstRow = false;
+        draw(shouldInitializeFirstRow);
+      }
+    });
+    controlElement.appendChild(checkboxElement);
+    controls.inputElements.push(checkboxElement);
+
+    container.appendChild(controlElement);
+  }
+
+
+  var ruleLabel = document.createElement('label');
+
+  var ruleSelection = document.createElement('select');
+  ruleSelection.addEventListener('change', function(e) {
+    var oldSupressDrawing = controls.suppressDrawing;
+
+    controls.suppressDrawing = true;
+    var ruleId = parseInt(e.target.value);
+    var shouldUpdateCheckboxes = true;
+    var shouldUpdateSelection = false;
+    controls.set(ruleId, shouldUpdateCheckboxes, shouldUpdateSelection);
+    controls.suppressDrawing = oldSupressDrawing;
+
+    if(!controls.suppressDrawing) {
+      var shouldInitializeFirstRow = false;
+      draw(shouldInitializeFirstRow);
+    }
+  });
+  for(var i = 0; i < 256; ++i) {
+    var ruleOption = document.createElement('option');
+    ruleOption.textContent = i;
+    ruleOption.value = i;
+    ruleSelection.appendChild(ruleOption);
+  }
+
+  ruleLabel.textContent = 'Rule';
+  ruleLabel.appendChild(ruleSelection);
+  controls.selection = ruleSelection;
+  container.appendChild(ruleLabel);
+
+
+  var randomizeLabel = document.createElement('label');
+
+  var randomizeCheckbox = document.createElement('input');
+  randomizeCheckbox.type = 'checkbox';
+  if(controls.randomize) {
+    randomizeCheckbox.checked = 'checked';
+  }
+  randomizeCheckbox.addEventListener('change', function (e) {
+    controls.randomize = e.target.checked;
+    var shouldInitializeFirstRow = true;
+    draw(shouldInitializeFirstRow);
+  });
+
+  randomizeLabel.textContent = 'Randomize';
+  randomizeLabel.insertBefore(randomizeCheckbox, randomizeLabel.firstChild);
+
+  container.appendChild(randomizeLabel);
+
+
+  var colorizeLabel = document.createElement('label');
+
+  var colorizeCheckbox = document.createElement('input');
+  colorizeCheckbox.type = 'checkbox';
+  if(controls.colorize) {
+    colorizeCheckbox.checked = 'checked';
+  }
+  colorizeCheckbox.addEventListener('change', function (e) {
+    controls.colorize = e.target.checked;
+    var shouldInitializeFirstRow = false;
+    draw(shouldInitializeFirstRow);
+  });
+
+  colorizeLabel.textContent = 'Colorize';
+  colorizeLabel.insertBefore(colorizeCheckbox, colorizeLabel.firstChild);
+
+  container.appendChild(colorizeLabel);
+
+
+  return controls;
+} 
+
+Controls.prototype.getBitArray = function () {
+    var result = [];
+    for (var i = 0; i < this.inputElements.length; i++) {
+      result[i] = this.inputElements[i].checked;
+    }
+    return result;
+};
+
+Controls.prototype.set = function (n, shouldUpdateCheckboxes, shouldUpdateSelection) {
+  if(shouldUpdateCheckboxes === undefined) {
+    shouldUpdateCheckboxes = true;
+  }
+
+  if(shouldUpdateSelection === undefined) {
+    shouldUpdateSelection = true;
+  }
+
+  if(shouldUpdateCheckboxes) {    
+    var isChecked = getBitArray(n, this.inputElements.length);
+    for(var i = 0; i < this.inputElements.length; ++i) {
+      this.inputElements[i].checked = isChecked[i] ? 'checked' : '';
+    }
+  }
+
+  if(shouldUpdateSelection) {
+    for(var i = 0; i < this.selection.children.length; ++i) {
+      var optionElement = this.selection.children[i];
+      if(parseInt(optionElement.value) == n) {
+        optionElement.selected = true;
+      }
+    }
+  }
+}
+
+Controls.prototype.getDecimalRepresentation = function () {
+  var result = 0;
+  var bitArray = this.getBitArray();
+
+  for(var i = bitArray.length -1; i >= 0 ; --i) {
+    var value = bitArray[bitArray.length - 1 - i] ? 1 : 0;
+    result += value << i;
+  }
+
+  return result;
+};
+
+var controls;
+
+function init() {
+  var container = document.getElementById('controls');
+  controls = new Controls(container);
+
+  // center canvas
+  // NOTE(vlaube): won't work without timeout, don't know why
+  window.setTimeout(function() {
+    window.scrollTo((document.body.scrollWidth - window.screen.availWidth) / 2, 0)
+  }, 1);
+
+  // rule 30 https://en.wikipedia.org/wiki/Rule_30
+  var rule = 30;
+
+  // rule 90 https://en.wikipedia.org/wiki/Rule_90
+  // var rule = 90;
+
+  // rule 110 https://en.wikipedia.org/wiki/Rule_110
+  // var rule = 110;
+
+  controls.set(rule);
+}
+
+var timerIds = [];
+function draw(shouldInitializeFirstRow) {
+  console.log("drawing");
+  if(shouldInitializeFirstRow === undefined) {
+    shouldInitializeFirstRow = true;
+  }
+
+  var minH = 0;
+  var maxH = 100;
+  var diff = maxH - minH;
+  var canvas = document.getElementById('canvas');
+  var sleepTime = 1;
+
+  while (timerIds.length > 0) {
+    var timerId = timerIds.pop();
+    window.clearTimeout(timerId);
+  }
+
+  timerIds.push(window.setTimeout(function drawIteration() {
+    drawSegment(minH, maxH, shouldInitializeFirstRow);
+
+    if(minH < canvas.height) {
+      minH += diff;
+      maxH += diff;
+
+      if(maxH > canvas.height) {
+        maxH = canvas.height;
+      }
+
+      timerIds.push(window.setTimeout(drawIteration, sleepTime));
+    }
+
+  }, sleepTime));
+}
+
+function drawSegment(minH, maxH, shouldInitializeFirstRow) {
+  var canvas = document.getElementById('canvas');
+
+  var ctx = canvas.getContext('2d');
+  var w = canvas.width;
+  
+  var r = controls.getBitArray();
+
+  var white = 0xFFFFFFFF;
+  var black = 0xff000000;
+  var colors = [
+    0xFFFF00FF, // fuchsia
+    0xFF0000FF, // red
+    0xFF00A5FF, // orange
+    0xFF00FFFF, // yellow
+    0xFF008000, // green
+    0xFFFF901E, // dodgerblue
+    0xFF800000, // navy
+    0xFF800080, // purple
+  ];
+
+  if(minH>0) minH--;
+
+  var imageY = minH;
+  var imageH = maxH-minH;
+  var imageData = ctx.getImageData(0, imageY, w, imageH);
+  var pixels = new Uint32Array(imageData.data.buffer);
+
+  // initialize first row
+  if(shouldInitializeFirstRow && minH == 0) {
+    for(var x = 0; x < w; x++) {
+      var color;
+
+      if(controls.randomize) {
+        color = Math.random() > 0.5 ? black : white;
+      } else {
+        var isCenter = x == (Math.floor(w / 2));
+        color = isCenter ? black : white;
+      }
+
+      pixels[x] = color;
+    }
+  }
+
+  var outIndex = w;
+  var inIndex = 0;
+
+  for(var y = minH; y < maxH; y++) {
+    for(var x = 0; x < w; x++) {
+      var pixelA = (x > 0) ? pixels[inIndex + x - 1] : white;
+      var pixelB = pixels[inIndex + x];
+      var pixelC = (x < w - 1) ? pixels[inIndex + x + 1] : white;
+      
+      var bitA = (pixelA === white || pixelA === undefined) ? 1 : 0;
+      var bitB = (pixelB === white) ? 1 : 0;
+      var bitC = (pixelC === white || pixelC === undefined) ? 1 : 0;
+
+      var colorIndex = bitA << 2 | bitB << 1 | bitC << 0;
+
+      var color;
+      if(r[colorIndex]) {
+        if(controls.colorize) {
+          color = colors[colorIndex];
+        } else {
+          color = black;
+        }
+      } else {
+          color = white;
+      }
+
+      pixels[outIndex + x] = color;
+    }
+    outIndex += w;
+    inIndex += w;
+  }
+
+  ctx.putImageData(imageData, 0, minH);
+}
+
+
+    </script>
+  </head>
+  <body onload="init();draw();">
+    <div id="controls"></div>
+    <canvas id="canvas" width="5000" height="2500"></canvas>
+    </body>
+ </html>
